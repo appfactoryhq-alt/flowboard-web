@@ -47,4 +47,16 @@ Innerhalb eines Boards (`/board/[boardId]`) kann der User Lists (Spalten) anlege
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- `src/lib/lists/actions.ts`: `createList`/`renameList`/`deleteList`/`reorderList`, Fractional-Position mit `POSITION_STEP = 1000` beim Anhängen.
+- `BoardLists` (Client) haelt lokalen Reorder-State, synchronisiert mit Server-Props über das „Adjust state during render"-Pattern (Vergleich gegen gespeicherten Vorwert) statt `useEffect` — ESLint (`react-hooks/set-state-in-effect`, Teil von `eslint-config-next` mit React-Compiler-Regeln) verbietet direkte `setState`-Aufrufe im Effekt-Body, das Pattern aus den React-Docs („you might not need an effect") löst das sauber.
+- Codex-Review (gpt-5.6-sol, high): ein Blocker, drei Warnings, ein Nit.
+  - **Blocker behoben:** Fractional-Ranking ohne Kollisionsschutz — nach vielen Einsortierungen zwischen denselben Nachbarn rundet `float8` den Mittelwert exakt auf einen Nachbarwert (verletzt Akzeptanzkriterium 5). Fix: Kollisionserkennung (`newPosition === prev.position || newPosition === next.position`) löst ein volles Rebalancing aller sichtbaren Listen-Positionen auf sichere 1000er-Abstände aus.
+  - **Warning behoben:** Reorder-Fehler wurden bisher verschluckt (`void reorderList(...)`) — jetzt awaited, bei Fehler Toast plus Rollback auf `initialLists`.
+  - **Warning behoben:** `cancelledRef` (Escape-vs-Blur-Race) blieb nach einem abgebrochenen Edit gesetzt und hätte den nächsten regulären Blur verschluckt — wird jetzt beim Öffnen des Editors zurückgesetzt (Rename und Quick-Add).
+  - **Warning bewusst akzeptiert:** `createList` liest `max(position)` und inserted in zwei getrennten Schritten ohne Lock/RPC — theoretische Race Condition bei zwei parallelen Requests (z. B. zwei Tabs). Für eine Solo-User-App mit seltenen gleichzeitigen List-Anlagen ist das Risiko gering; volle Lösung (RPC mit `select for update`) würde die Spec-Komplexität für einen Rand-Fall unverhältnismäßig erhöhen. Bei Bedarf in `backlog.md` nachziehbar.
+  - **Nit behoben:** Quick-Add-Button zeigt „Erste Liste anlegen" statt „Liste hinzufügen", wenn das Board noch leer ist.
+- Zusätzlich zu Typecheck/Lint erneut `npm run build` (alle Routen kompilieren). Browser-Erweiterung weiterhin nicht verbunden, kein visueller Drag-Test in dieser Session möglich — empfohlene Nachverifikation (Rebalancing-Stichprobe, Escape/Blur-Sequenz) folgt beim nächsten Browser-Zugriff.

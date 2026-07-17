@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase B — Kern-Kanban
 
+### Spec 05 — Lists-CRUD
+- `src/lib/lists/actions.ts` (createList/renameList/deleteList/reorderList), horizontales Same-Row-Reorder via `motion/react` `Reorder`
+- Fractional-Ranking-Kollisionsschutz (Rebalancing auf 1000er-Abstände bei float8-Präzisionsgrenze), Reorder-Fehlerbehandlung mit Rollback
+
 ### Spec 04 — Boards-CRUD
 - `src/lib/boards/actions.ts` (createBoard/renameBoard/deleteBoard), Board-Übersicht `/board` (Grid + Empty State), Board-Detail-Platzhalter `/board/[boardId]` mit `notFound()`-Schutz
 - Rename via Dialog, Delete via AlertDialog-Bestätigung, beide mit korrektem „nicht gefunden/kein Zugriff"-Fehlerpfad (Codex-Review-Fix)
