@@ -1,11 +1,14 @@
 "use client"
 
 import { useActionState, useEffect, useRef, useState } from "react"
+import { useDroppable } from "@dnd-kit/core"
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { deleteList, renameList, type ListActionState } from "@/lib/lists/actions"
-import { CardItem, type Card } from "@/components/cards/card-item"
+import { type Card } from "@/components/cards/card-item"
+import { SortableCard } from "@/components/cards/sortable-card"
 import { QuickAddCard } from "@/components/cards/quick-add-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,21 +36,20 @@ const initialState: ListActionState = { data: null, error: null }
 export function ListColumn({
   list,
   boardId,
-  initialCards,
+  cards,
+  onCardDeleted,
 }: {
   list: List
   boardId: string
-  initialCards: Card[]
+  cards: Card[]
+  onCardDeleted: (cardId: string) => void
 }) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [cards, setCards] = useState(initialCards)
-  const [prevInitialCards, setPrevInitialCards] = useState(initialCards)
-
-  if (initialCards !== prevInitialCards) {
-    setPrevInitialCards(initialCards)
-    setCards(initialCards)
-  }
+  const { setNodeRef: setDroppableRef } = useDroppable({
+    id: list.id,
+    data: { type: "list" },
+  })
 
   async function handleDelete() {
     setIsDeleting(true)
@@ -89,17 +91,15 @@ export function ListColumn({
         </DropdownMenu>
       </div>
 
-      <div className="flex min-h-16 flex-col gap-2">
-        {cards.map((card) => (
-          <CardItem
-            key={card.id}
-            card={card}
-            boardId={boardId}
-            onDeleted={(cardId) =>
-              setCards((current) => current.filter((c) => c.id !== cardId))
-            }
-          />
-        ))}
+      <div ref={setDroppableRef} className="flex min-h-16 flex-col gap-2">
+        <SortableContext
+          items={cards.map((card) => card.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {cards.map((card) => (
+            <SortableCard key={card.id} card={card} boardId={boardId} onDeleted={onCardDeleted} />
+          ))}
+        </SortableContext>
         <QuickAddCard listId={list.id} boardId={boardId} />
       </div>
 

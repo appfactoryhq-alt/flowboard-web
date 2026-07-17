@@ -92,6 +92,28 @@ export async function updateCardTitle(
   return { data: { id: cardId }, error: null }
 }
 
+export async function moveCard(
+  cardId: string,
+  boardId: string,
+  targetListId: string,
+  newPosition: number,
+): Promise<CardActionState> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc("move_card", {
+    p_card_id: cardId,
+    p_board_id: boardId,
+    p_target_list_id: targetListId,
+    p_new_position: newPosition,
+  })
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  revalidatePath(`/board/${boardId}`)
+  return { data: { id: cardId }, error: null }
+}
+
 export async function deleteCard(cardId: string, boardId: string): Promise<CardActionState> {
   const supabase = await createClient()
   const { data, error } = await supabase

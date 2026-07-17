@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 
 export type Card = {
   id: string
+  list_id: string
   title: string
   due_date: string | null
   position: number
