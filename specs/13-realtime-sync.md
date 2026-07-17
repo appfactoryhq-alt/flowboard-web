@@ -50,4 +50,15 @@
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- Realtime-Publication für `cards` war **komplett leer** (via `pg_publication_tables` verifiziert, nicht angenommen — genau der in der Spec verlangte Check). Migration `flow_board_realtime_cards_publication` fügt `public.cards` hinzu.
+- `useRealtimeCards(boardId, { onUpsert, onDelete })`: abonniert `postgres_changes` INSERT/UPDATE gefiltert auf `board_id=eq.<boardId>` (RLS greift zusätzlich pro Subscriber). Callback wird über eine Ref aktuell gehalten (`useEffect` ohne Deps aktualisiert die Ref, nicht direkt im Render-Body — sonst schlägt `eslint react-hooks/refs` an), das Subscribe-Effect hängt nur von `boardId` ab, Cleanup via `supabase.removeChannel(channel)`.
+- `board-lists.tsx`s `handleRealtimeUpsert`: idempotentes Upsert per Card-ID über alle Listen hinweg, übernimmt vorhandene `labelIds` von der lokal bekannten Card (die `cards`-Tabelle kennt keine Labels, ein Realtime-Payload würde sie sonst verlieren).
+- **DELETE-Events sind bei Postgres Changes nicht spaltenfilterbar UND nicht RLS-geschützt** (dokumentierte Supabase-Einschränkung, in der Spec bereits antizipiert). Statt eines echten Tombstone-Datensatzes: leichtgewichtiges Supabase-Realtime-**Broadcast** über denselben Board-Channel (`broadcastDelete(cardId)`, kein DB-Trigger, reines Client-zu-Client-Signal, enthält nur die Card-ID). Eigene Broadcasts werden nicht an den Sender zurückgespiegelt (`self: false` ist Default).
+- **Codex-Review (gpt-5.6-sol, high, zwei Runden):**
+  - **Blocker behoben: Cross-Tab-Delete fehlte komplett.** Die ursprüngliche „Bereits entschieden"-Formulierung der Spec (DELETE bleibt rein lokal-optimistisch in der löschenden Session) widersprach der eigenen Akzeptanzkriterium 3 („Card in Tab A löschen entfernt sie auch in Tab B"). Nach Abwägung der beiden von der Spec selbst genannten Optionen („optimistisch **oder** Tombstone-Pattern") wurde das Tombstone-Pattern über Broadcast umgesetzt, da eine echte Cross-Device-Sync für den Solo-User-Anwendungsfall (siehe Architektur-Entscheidung: „Realtime-Sync zwischen Geräten") den tatsächlichen Produktnutzen besser trifft als eine rein lokale Lösung. Zweite Codex-Runde bestätigt: Happy-Path-Fix funktioniert zuverlässig.
+  - **Bewusst akzeptiert (Backlog, von Codex als Warning/Risiko eingestuft, kein Blocker):** (1) Broadcast ist flüchtig ohne Zustellgarantie — eine kurz getrennte Session verpasst das Signal dauerhaft bis zur nächsten Revalidierung; (2) Broadcast-Channels sind nicht RLS-geschützt — wer Board- und Card-UUID kennt, könnte theoretisch ein gefälschtes Delete-Signal senden (keine Datenexposition, nur kosmetische, selbstheilende Desynchronisation); (3) keine strikte Ordering-Garantie zwischen `postgres_changes`- und `broadcast`-Events. Alle drei für eine Solo-User-App mit zufälligen UUIDs als akzeptables Risiko bewertet, vollständige Lösung (Supabase Realtime Authorization/Private Channels oder echte Tombstone-Spalte) in `backlog.md` dokumentiert.
+- **Offene Nachverifikation (kein Browser-Zugriff in dieser Session):** zwei echte Tabs (Insert/Update/Move/Delete), Board-Wechsel-Cleanup über den Netzwerk-Tab, Cross-User-Isolation, absichtlich verzögerte/offline Sessions.

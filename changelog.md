@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase C — Smart-Features, Realtime, AI, Landingpage
 
+### Spec 13 — Realtime-Sync
+- `cards` zur Realtime-Publication hinzugefügt (war leer), `useRealtimeCards` (INSERT/UPDATE via postgres_changes, RLS-gefiltert), idempotentes Upsert per Card-ID
+- DELETE via leichtgewichtiges Broadcast-Tombstone-Signal (Codex-Review-Blocker-Fix: ursprünglich rein lokal-optimistisch, widersprach der eigenen Akzeptanzkriterien)
+
 ### Spec 12 — Full-Text Search
 - `search_vector` generated column (GIN-Index), `SearchCommand` (Cmd/Ctrl+K, `websearch_to_tsquery('german', ...)`), Deep-Link öffnet Treffer direkt im Board
 - Codex-Review: Deep-Link-Blocker behoben (öffnete nicht, wenn Board bereits offen war), Race-Condition-Schutz gegen veraltete Suchantworten

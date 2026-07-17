@@ -23,6 +23,7 @@ import { NewListButton } from "@/components/lists/new-list-button"
 import { CardPreview } from "@/components/cards/card-preview"
 import type { Card } from "@/components/cards/card-item"
 import type { Label } from "@/lib/labels/types"
+import { useRealtimeCards, type CardsTableRow } from "@/hooks/use-realtime-cards"
 
 type List = { id: string; name: string; position: number }
 
@@ -197,7 +198,57 @@ export function BoardLists({
       ...current,
       [listId]: (current[listId] ?? []).filter((card) => card.id !== cardId),
     }))
+    broadcastDelete(cardId)
   }
+
+  // Broadcast-Empfang: eine ANDERE Session hat diese Card geloescht (die
+  // eigene, loeschende Session bekommt ihr eigenes Broadcast nicht zurueck,
+  // siehe use-realtime-cards.ts). Card ueberall entfernen, unabhaengig davon,
+  // in welcher Liste sie lokal gerade steht.
+  function handleRealtimeDelete(cardId: string) {
+    setCardsByList((current) => {
+      const next: Record<string, Card[]> = {}
+      for (const [listId, cards] of Object.entries(current)) {
+        next[listId] = cards.filter((card) => card.id !== cardId)
+      }
+      return next
+    })
+  }
+
+  // Realtime-INSERT/UPDATE-Echo (auch der eigenen Session) idempotent per
+  // Card-ID einsortieren: bestehende labelIds bleiben erhalten (die
+  // cards-Tabelle kennt keine Labels, ein Realtime-Payload wuerde sie sonst
+  // verlieren), die Card wird aus allen Listen entfernt und in die vom
+  // Payload genannte Ziel-Liste neu eingefuegt und nach Position sortiert.
+  function handleRealtimeUpsert(row: CardsTableRow) {
+    setCardsByList((current) => {
+      let existingLabelIds: string[] = []
+      for (const cards of Object.values(current)) {
+        const found = cards.find((card) => card.id === row.id)
+        if (found) {
+          existingLabelIds = found.labelIds
+          break
+        }
+      }
+
+      const merged: Card = { ...row, labelIds: existingLabelIds }
+
+      const next: Record<string, Card[]> = {}
+      for (const [listId, cards] of Object.entries(current)) {
+        next[listId] = cards.filter((card) => card.id !== row.id)
+      }
+      next[row.list_id] = [...(next[row.list_id] ?? []), merged].sort(
+        (a, b) => a.position - b.position,
+      )
+
+      return next
+    })
+  }
+
+  const { broadcastDelete } = useRealtimeCards(boardId, {
+    onUpsert: handleRealtimeUpsert,
+    onDelete: handleRealtimeDelete,
+  })
 
   async function handleListDragEnd(listId: string) {
     const index = lists.findIndex((list) => list.id === listId)
