@@ -2,6 +2,12 @@
 
 Abgeschlossene Specs, neueste zuerst.
 
+## Phase B — Kern-Kanban
+
+### Spec 03 — Base-Layout
+- Geschützte Route-Group `src/app/(app)/` mit Header (`app-header.tsx`, User-Menü/Logout) und Sidebar (`app-sidebar.tsx`, Boards-Link aktiv, Heute/Focus deaktiviert bis Spec 10/11)
+- shadcn-Komponenten `dropdown-menu`, `tooltip`, `separator` ergänzt (base-ui-basiert)
+
 ## Phase A — Fundament
 
 ### Spec 02 — Auth
