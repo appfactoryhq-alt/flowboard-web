@@ -5,27 +5,11 @@ import { usePathname } from "next/navigation"
 import { LayoutGrid, Sparkles, Target } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 
 const NAV_ITEMS = [
-  { href: "/board", label: "Boards", icon: LayoutGrid, disabled: false },
-  {
-    href: "/today",
-    label: "Heute",
-    icon: Sparkles,
-    disabled: false,
-  },
-  {
-    href: "/focus",
-    label: "Focus",
-    icon: Target,
-    disabled: true,
-    disabledHint: "Kommt in Spec 11",
-  },
+  { href: "/board", label: "Boards", icon: LayoutGrid },
+  { href: "/today", label: "Heute", icon: Sparkles },
+  { href: "/focus", label: "Focus", icon: Target },
 ] as const
 
 export function AppSidebar() {
@@ -37,37 +21,21 @@ export function AppSidebar() {
         const Icon = item.icon
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
 
-        const link = (
+        return (
           <Link
             key={item.href}
-            href={item.disabled ? "#" : item.href}
-            aria-disabled={item.disabled}
+            href={item.href}
             aria-current={isActive ? "page" : undefined}
-            tabIndex={item.disabled ? -1 : undefined}
-            onClick={(event) => {
-              if (item.disabled) event.preventDefault()
-            }}
             className={cn(
               "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ease-out",
-              item.disabled
-                ? "cursor-not-allowed text-muted-foreground/50"
-                : isActive
-                  ? "bg-gradient-to-r from-primary/15 to-primary/5 text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:bg-muted/60 focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              isActive
+                ? "bg-gradient-to-r from-primary/15 to-primary/5 text-foreground"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:bg-muted/60 focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             )}
           >
             <Icon className="size-4" />
             {item.label}
           </Link>
-        )
-
-        if (!item.disabled) return link
-
-        return (
-          <Tooltip key={item.href}>
-            <TooltipTrigger render={link} />
-            <TooltipContent side="right">{item.disabledHint}</TooltipContent>
-          </Tooltip>
         )
       })}
     </aside>

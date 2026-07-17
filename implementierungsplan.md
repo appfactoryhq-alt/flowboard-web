@@ -16,7 +16,7 @@ Solo-User-Kanban-App (Web plus Native, siehe `Architektur-EntscheidungFlowBoard.
 | 08 | Card-Detail-Modal | fertig |
 | 09 | Labels + Priority | fertig |
 | 10 | Smart-View Heute | fertig |
-| 11 | Focus-Mode | offen |
+| 11 | Focus-Mode | fertig |
 | 12 | Full-Text Search | offen |
 | 13 | Realtime-Sync | offen |
 | 14 | Smart-Card-Generation | offen |

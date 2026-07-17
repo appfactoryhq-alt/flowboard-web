@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { revalidateCardViews } from "@/lib/revalidate"
 
 export type CardActionState = {
   data: { id: string } | null
@@ -13,14 +14,7 @@ export type CardPriority = "low" | "med" | "high"
 
 const POSITION_STEP = 1000
 
-// Card-Aenderungen koennen sich auf mehrere Ansichten auswirken (Board-Detail
-// plus board-uebergreifende Smart-Views wie "Heute"), die alle direkt aus
-// derselben cards-Tabelle lesen und daher jeweils eigenstaendig revalidiert
-// werden muessen - revalidatePath deckt nur den uebergebenen Pfad ab.
-function revalidateCardViews(boardId: string) {
-  revalidatePath(`/board/${boardId}`)
-  revalidatePath("/today")
-}
+const MAX_FOCUS_SLOTS = 3
 
 function readCardTitle(formData: FormData): string | null {
   const title = formData.get("title")
@@ -196,6 +190,74 @@ export async function moveCard(
 
   if (error) {
     return { data: null, error: error.message }
+  }
+
+  revalidateCardViews(boardId)
+  return { data: { id: cardId }, error: null }
+}
+
+export async function activateFocus(cardId: string, boardId: string): Promise<CardActionState> {
+  const supabase = await createClient()
+
+  const { data: activeCards, error: activeError } = await supabase
+    .from("cards")
+    .select("focus_slot")
+    .not("focus_slot", "is", null)
+
+  if (activeError) {
+    return { data: null, error: activeError.message }
+  }
+
+  const usedSlots = new Set((activeCards ?? []).map((card) => card.focus_slot))
+  let freeSlot: number | null = null
+  for (let slot = 1; slot <= MAX_FOCUS_SLOTS; slot++) {
+    if (!usedSlots.has(slot)) {
+      freeSlot = slot
+      break
+    }
+  }
+
+  if (freeSlot === null) {
+    return { data: null, error: `Focus ist bereits voll (${MAX_FOCUS_SLOTS}/${MAX_FOCUS_SLOTS}).` }
+  }
+
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ focus_slot: freeSlot })
+    .eq("id", cardId)
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    if (error.code === "23505") {
+      return { data: null, error: "Focus ist bereits voll oder wurde gerade belegt." }
+    }
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
+  }
+
+  revalidateCardViews(boardId)
+  return { data: { id: cardId }, error: null }
+}
+
+export async function deactivateFocus(cardId: string, boardId: string): Promise<CardActionState> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ focus_slot: null })
+    .eq("id", cardId)
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
   revalidateCardViews(boardId)

@@ -3,10 +3,17 @@
 import { useActionState, useEffect, useRef, useState, type CSSProperties } from "react"
 import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core"
 import { motion } from "motion/react"
-import { CalendarDays, X } from "lucide-react"
+import { CalendarDays, Target, X } from "lucide-react"
 import { toast } from "sonner"
 
-import { deleteCard, updateCardTitle, type CardActionState, type CardPriority } from "@/lib/cards/actions"
+import {
+  activateFocus,
+  deactivateFocus,
+  deleteCard,
+  updateCardTitle,
+  type CardActionState,
+  type CardPriority,
+} from "@/lib/cards/actions"
 import { CardDetailDialog } from "@/components/cards/card-detail-dialog"
 import { LabelBadge } from "@/components/labels/label-badge"
 import { PriorityDot } from "@/components/cards/priority-select"
@@ -23,6 +30,7 @@ export type Card = {
   description: string | null
   due_date: string | null
   priority: CardPriority
+  focus_slot: number | null
   labelIds: string[]
   position: number
   created_at: string
@@ -54,6 +62,7 @@ export function CardItem({
 }) {
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isTogglingFocus, setIsTogglingFocus] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const updateWithIds = updateCardTitle.bind(null, card.id, boardId)
   const [state, formAction, isPending] = useActionState(updateWithIds, initialState)
@@ -87,6 +96,19 @@ export function CardItem({
 
     toast.success("Card gelöscht.")
     onDeleted(card.id)
+  }
+
+  async function handleToggleFocus() {
+    setIsTogglingFocus(true)
+    const result =
+      card.focus_slot !== null
+        ? await deactivateFocus(card.id, boardId)
+        : await activateFocus(card.id, boardId)
+    setIsTogglingFocus(false)
+
+    if (result.error) {
+      toast.error(result.error)
+    }
   }
 
   function openDetail() {
@@ -206,6 +228,30 @@ export function CardItem({
             ) : null}
           </div>
         ) : null}
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-xs"
+          aria-label={
+            card.focus_slot !== null
+              ? `Card „${card.title}“ aus Focus entfernen`
+              : `Card „${card.title}“ zu Focus hinzufügen`
+          }
+          aria-pressed={card.focus_slot !== null}
+          disabled={isTogglingFocus}
+          onClick={(event) => {
+            event.stopPropagation()
+            void handleToggleFocus()
+          }}
+          onKeyDown={(event) => event.stopPropagation()}
+          className={cn(
+            "absolute top-1 right-8 transition-opacity duration-150 ease-out focus-visible:opacity-100 group-hover/card:opacity-100",
+            card.focus_slot !== null ? "text-primary opacity-100" : "opacity-0",
+          )}
+        >
+          <Target className={cn("size-3", card.focus_slot !== null && "fill-current")} />
+        </Button>
 
         <Button
           type="button"

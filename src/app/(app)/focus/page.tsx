@@ -1,23 +1,26 @@
-import { Sparkles } from "lucide-react"
+import { Target } from "lucide-react"
 
 import { CrossBoardCardList } from "@/components/cards/cross-board-card-list"
 import type { Label } from "@/lib/labels/types"
 import { createClient } from "@/lib/supabase/server"
 
-export default async function TodayPage() {
+export default async function FocusPage() {
   const supabase = await createClient()
 
-  const { data: todayCards, error: todayCardsError } = await supabase
-    .from("today_cards")
-    .select("id, board_id, list_id, title, description, due_date, priority, focus_slot, position, created_at, updated_at")
-    .order("position", { ascending: true })
+  const { data: focusCards, error: focusCardsError } = await supabase
+    .from("cards")
+    .select(
+      "id, board_id, list_id, title, description, due_date, priority, focus_slot, position, created_at, updated_at",
+    )
+    .not("focus_slot", "is", null)
+    .order("focus_slot", { ascending: true })
 
-  if (todayCardsError) {
-    throw new Error(`Heute-Ansicht konnte nicht geladen werden: ${todayCardsError.message}`)
+  if (focusCardsError) {
+    throw new Error(`Focus-Ansicht konnte nicht geladen werden: ${focusCardsError.message}`)
   }
 
-  const boardIds = [...new Set((todayCards ?? []).map((card) => card.board_id))]
-  const cardIds = (todayCards ?? []).map((card) => card.id)
+  const boardIds = [...new Set((focusCards ?? []).map((card) => card.board_id))]
+  const cardIds = (focusCards ?? []).map((card) => card.id)
 
   const [{ data: boards, error: boardsError }, { data: labels, error: labelsError }, { data: cardLabels, error: cardLabelsError }] =
     await Promise.all([
@@ -53,7 +56,7 @@ export default async function TodayPage() {
     ;(labelIdsByCard[entry.card_id] ??= []).push(entry.label_id)
   }
 
-  const cards = (todayCards ?? []).map((card) => ({
+  const cards = (focusCards ?? []).map((card) => ({
     ...card,
     labelIds: labelIdsByCard[card.id] ?? [],
   }))
@@ -61,11 +64,11 @@ export default async function TodayPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <div className="flex items-center gap-2">
-        <Sparkles className="size-5 text-primary" />
-        <h1 className="text-xl font-semibold tracking-tight">Heute</h1>
+        <Target className="size-5 text-primary" />
+        <h1 className="text-xl font-semibold tracking-tight">Focus</h1>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Cards mit Fälligkeitsdatum heute, über alle Boards hinweg.
+        Bis zu 3 Cards, auf die du dich gerade konzentrierst ({cards.length}/3 belegt).
       </p>
 
       {cards.length > 0 ? (
@@ -74,10 +77,10 @@ export default async function TodayPage() {
         </div>
       ) : (
         <div className="mt-16 flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border/60 bg-muted/20 py-16 text-center">
-          <Sparkles className="size-8 text-muted-foreground/60" />
-          <p className="text-sm font-medium">Keine Cards heute fällig</p>
+          <Target className="size-8 text-muted-foreground/60" />
+          <p className="text-sm font-medium">Noch keine Focus-Cards</p>
           <p className="max-w-sm text-sm text-muted-foreground">
-            Cards mit einem Fälligkeitsdatum von heute erscheinen automatisch hier.
+            Markiere bis zu drei Cards über das Zielscheiben-Icon, um sie hier zu sammeln.
           </p>
         </div>
       )}

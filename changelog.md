@@ -4,6 +4,11 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase C — Smart-Features, Realtime, AI, Landingpage
 
+### Spec 11 — Focus-Mode
+- `activateFocus`/`deactivateFocus` (kleinste freie Slot-Nummer 1-3, Partial-Unique-Index als letzte Verteidigungslinie gegen Races), Focus-Toggle auf jeder Card, `/focus`-Seite
+- Kein separates `is_focus_active`-Feld nötig — `focus_slot IS NOT NULL` reicht (Schema-Check gegen Live-DB)
+- Refactor: gemeinsamer `revalidateCardViews`-Helper in `src/lib/revalidate.ts`, jetzt von Cards- und Label-Actions genutzt (Codex-Review-Fix: `/focus` wurde nach Label-Änderungen nicht revalidiert)
+
 ### Spec 10 — Smart-View Heute
 - SQL-View `today_cards` (`security_invoker = true`, Timezone-Filter über `profiles.timezone`), `/today`-Seite gruppiert board-übergreifend fällige Cards
 - Sidebar-Link aktiviert, globale Cross-Fade-Transition (`PageTransition`) für alle App-Seitenwechsel

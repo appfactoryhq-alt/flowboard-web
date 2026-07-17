@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
+import { revalidateCardViews } from "@/lib/revalidate"
 import { LABEL_COLORS, type LabelColor } from "@/lib/labels/types"
 
 export type LabelActionState = {
@@ -83,8 +84,7 @@ export async function deleteLabel(labelId: string, boardId: string): Promise<Lab
     return { data: null, error: "Label nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
-  revalidatePath("/today")
+  revalidateCardViews(boardId)
   return { data: { id: labelId }, error: null }
 }
 
@@ -103,8 +103,7 @@ export async function assignLabel(
     return { data: null, error: error.message }
   }
 
-  revalidatePath(`/board/${boardId}`)
-  revalidatePath("/today")
+  revalidateCardViews(boardId)
   return { data: { id: labelId }, error: null }
 }
 
@@ -124,7 +123,6 @@ export async function unassignLabel(
     return { data: null, error: error.message }
   }
 
-  revalidatePath(`/board/${boardId}`)
-  revalidatePath("/today")
+  revalidateCardViews(boardId)
   return { data: { id: labelId }, error: null }
 }
