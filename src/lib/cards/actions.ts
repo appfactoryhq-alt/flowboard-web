@@ -92,6 +92,58 @@ export async function updateCardTitle(
   return { data: { id: cardId }, error: null }
 }
 
+export async function updateCardDescription(
+  cardId: string,
+  boardId: string,
+  description: string,
+): Promise<CardActionState> {
+  const trimmed = description.trim()
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ description: trimmed.length > 0 ? trimmed : null })
+    .eq("id", cardId)
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
+  }
+
+  revalidatePath(`/board/${boardId}`)
+  return { data: { id: cardId }, error: null }
+}
+
+export async function updateCardDueDate(
+  cardId: string,
+  boardId: string,
+  dueDate: string | null,
+): Promise<CardActionState> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ due_date: dueDate })
+    .eq("id", cardId)
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
+  }
+
+  revalidatePath(`/board/${boardId}`)
+  return { data: { id: cardId }, error: null }
+}
+
 export async function moveCard(
   cardId: string,
   boardId: string,

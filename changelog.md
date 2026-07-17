@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase B — Kern-Kanban
 
+### Spec 08 — Card-Detail-Modal
+- `CardDetailDialog`: Titel, Beschreibung (debounced), Fälligkeitsdatum (Popover+Calendar), Zeitstempel; Motion-`layoutId`-Shared-Transition auf den Titel-Bereich beschränkt
+- Codex-Review (zwei Runden): Datenverlust-Blocker bei Server-Revalidierung während offenem Dialog behoben, Tastatur-Fokus-Handling für Modal-Öffnen nachgezogen, Reduced-Motion-Zoom neutralisiert
+
 ### Spec 07 — Cards-DnD (Cross-List)
 - Atomare RPC `move_card` (board-gescoped, Ownership-Checks), dnd-kit Multi-Container-Sortable für Same-List- und Cross-List-Drag (bewusste Abweichung von der Motion+dnd-kit-Hybrid-Vorgabe, siehe Spec-Debrief)
 - `DragOverlay`, optimistisches Cross-List-Verschieben mit Rollback-Snapshot pro Drag, Generation-Counter gegen veraltete Rollback-Antworten
