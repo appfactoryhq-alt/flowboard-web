@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase B — Kern-Kanban
 
+### Spec 04 — Boards-CRUD
+- `src/lib/boards/actions.ts` (createBoard/renameBoard/deleteBoard), Board-Übersicht `/board` (Grid + Empty State), Board-Detail-Platzhalter `/board/[boardId]` mit `notFound()`-Schutz
+- Rename via Dialog, Delete via AlertDialog-Bestätigung, beide mit korrektem „nicht gefunden/kein Zugriff"-Fehlerpfad (Codex-Review-Fix)
+
 ### Spec 03 — Base-Layout
 - Geschützte Route-Group `src/app/(app)/` mit Header (`app-header.tsx`, User-Menü/Logout) und Sidebar (`app-sidebar.tsx`, Boards-Link aktiv, Heute/Focus deaktiviert bis Spec 10/11)
 - shadcn-Komponenten `dropdown-menu`, `tooltip`, `separator` ergänzt (base-ui-basiert)

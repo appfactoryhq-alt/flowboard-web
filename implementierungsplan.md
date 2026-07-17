@@ -9,7 +9,7 @@ Solo-User-Kanban-App (Web plus Native, siehe `Architektur-EntscheidungFlowBoard.
 | 01 | Schema + RLS | fertig |
 | 02 | Auth | fertig |
 | 03 | Base-Layout | fertig |
-| 04 | Boards-CRUD | offen |
+| 04 | Boards-CRUD | fertig |
 | 05 | Lists-CRUD | offen |
 | 06 | Cards-CRUD (Quick-Add) | offen |
 | 07 | Cards-DnD (Cross-List) | offen |

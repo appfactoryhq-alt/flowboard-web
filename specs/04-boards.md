@@ -43,4 +43,12 @@ User kann eigene Boards anlegen, umbenennen und löschen. `/board` wird zur echt
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- `src/lib/boards/actions.ts`: `createBoard`/`renameBoard`/`deleteBoard`, `user_id` wird nie vom Client gesetzt (DB-Default `auth.uid()` plus RLS trägt die gesamte Autorisierung, keine zusätzlichen `.eq("user_id", ...)`-Checks im App-Code nötig).
+- UI: `NewBoardDialog` (Dialog + `useActionState`, redirectet nach Erfolg auf `/board/[id]`), `BoardCard` mit DropdownMenu (Umbenennen über eigenes Dialog+`useActionState`, Löschen über AlertDialog mit imperativem Server-Action-Aufruf statt Formular).
+- `/board` (Übersicht, Grid + Empty State) und `/board/[boardId]` (Detail-Platzhalter, `maybeSingle()` + `notFound()` bei fremdem/fehlendem Board) angelegt.
+- Codex-Review (gpt-5.6-sol, high): keine Blocker. Zwei Warnings behoben: (1) `renameBoard`/`deleteBoard` meldeten bei RLS-gefilterter fremder/fehlender ID fälschlich Erfolg (kein IDOR, aber falscher Status) — jetzt `.select("id").maybeSingle()` nach `update`/`delete`, `null` ergibt kontrollierten Fehler „Board nicht gefunden oder kein Zugriff.“; (2) Ladefehler auf `/board` und `/board/[boardId]` wurden bisher still als Empty State bzw. 404 dargestellt — beide werfen jetzt bei echtem Query-Fehler, statt den Fehler zu verschlucken.
+- Zusätzlich zu Typecheck/Lint ein `npm run build`-Durchlauf gemacht (Browser-Erweiterung weiterhin nicht verbunden) — alle Routen inkl. `/board` und `/board/[boardId]` kompilieren serverseitig ohne Client/Server-Boundary-Fehler.
