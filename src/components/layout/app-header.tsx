@@ -5,6 +5,7 @@ import { LogOut, User } from "lucide-react"
 import { toast } from "sonner"
 
 import { logout, type AuthActionState } from "@/app/(auth)/actions"
+import { SearchCommand } from "@/components/search/search-command"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -32,6 +33,8 @@ export function AppHeader({ email }: { email: string | null }) {
         <div className="size-6 rounded-md bg-gradient-to-br from-primary to-primary/40" />
         <span className="text-sm font-semibold tracking-tight">Flow Board</span>
       </div>
+
+      <SearchCommand />
 
       <DropdownMenu>
         <DropdownMenuTrigger

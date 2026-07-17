@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase C — Smart-Features, Realtime, AI, Landingpage
 
+### Spec 12 — Full-Text Search
+- `search_vector` generated column (GIN-Index), `SearchCommand` (Cmd/Ctrl+K, `websearch_to_tsquery('german', ...)`), Deep-Link öffnet Treffer direkt im Board
+- Codex-Review: Deep-Link-Blocker behoben (öffnete nicht, wenn Board bereits offen war), Race-Condition-Schutz gegen veraltete Suchantworten
+
 ### Spec 11 — Focus-Mode
 - `activateFocus`/`deactivateFocus` (kleinste freie Slot-Nummer 1-3, Partial-Unique-Index als letzte Verteidigungslinie gegen Races), Focus-Toggle auf jeder Card, `/focus`-Seite
 - Kein separates `is_focus_active`-Feld nötig — `focus_slot IS NOT NULL` reicht (Schema-Check gegen Live-DB)

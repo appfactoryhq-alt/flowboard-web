@@ -42,4 +42,15 @@ User kann Cards boardübergreifend per Volltextsuche über Titel und Beschreibun
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- Migration `flow_board_cards_search_vector`: generated column `search_vector` (`to_tsvector('german', title || description)`), GIN-Index. `get_advisors(security)` zeigt nur die bekannte, erwartete WARN.
+- `searchCards` nutzt `.textSearch("search_vector", query, { type: "websearch", config: "german" })` — von Codex explizit gegen die installierte `@supabase/postgrest-js`-Version verifiziert, entspricht `websearch_to_tsquery('german', ...)`. Kein eigener `user_id`-Filter — konsistent mit allen bisherigen Actions in diesem Projekt, die durchgängig RLS als alleinige Autorisierungsschicht nutzen (Abweichung von der ursprünglichen Spec-Formulierung, die einen zusätzlichen Filter „defense in depth" vorsah — bewusst an die etablierte Projekt-Konvention angeglichen).
+- `SearchCommand`: Cmd/Ctrl+K-Shortcut, 300ms Debounce, shadcn `CommandDialog`. **Wichtiger Fund:** die base-nova-generierte `CommandDialog`-Komponente wrapped `children` NICHT automatisch in `<Command>` (anders als der shadcn-Standard-Codebaustein) — `cmdk`-Primitives wie `CommandInput`/`CommandList` brauchen aber den `Command`-Context, sonst Runtime-Crash. Fix: eigener `<Command shouldFilter={false}>`-Wrapper in `search-command.tsx`, von Codex als notwendig und korrekt bestätigt.
+- Klick auf Ergebnis navigiert zu `/board/{boardId}?card={cardId}`; `CardItem` liest `?card=` und öffnet automatisch das passende Detail-Modal, entfernt den Parameter danach wieder.
+- **Codex-Review (gpt-5.6-sol, high): ein Blocker, eine Warning behoben.**
+  - **Blocker behoben: Deep-Link öffnete die Card nicht, wenn deren Board bereits angezeigt wurde.** Der `useState`-Lazy-Initializer für `detailOpen` erfasst nur den Fall, dass die Card gerade neu gemountet wird (Navigation von einem anderen Board). Bleibt die Card-Liste beim Klick auf ein Suchergebnis für das aktuell offene Board gemountet, ändert sich nur der Query-Param — kein neuer Mount, der Initializer läuft nie erneut, der Dialog blieb zu. Fix: „Adjust state during render"-Guard (`handledSearchOpen`-Flag) öffnet den Dialog jetzt zuverlässig bei jedem `?card=`-Treffer, unabhängig vom Mount-Zeitpunkt. Der reine URL-Cleanup (`router.replace`) bleibt als echter Seiteneffekt im `useEffect`.
+  - **Warning behoben: veraltete Suchantworten konnten neuere überschreiben.** Schnelle Folge-Eingaben ohne Sequenzschutz — eine langsamere ältere Antwort konnte nach einer schnelleren neueren zurückkommen und deren Ergebnisse überschreiben. Fix: `requestIdRef`-Zähler, nur die jeweils aktuellste Anfrage darf `results` setzen.
+- **Offene Nachverifikation (kein Browser-Zugriff in dieser Session):** Suche im UI, Deep-Link auf gleichem/anderem Board, deutsches Stemming (Singular/Plural), Cross-User-Isolation, GIN-Index-Nutzung via `explain`.

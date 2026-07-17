@@ -1,6 +1,7 @@
 "use client"
 
 import { useActionState, useEffect, useRef, useState, type CSSProperties } from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core"
 import { motion } from "motion/react"
 import { CalendarDays, Target, X } from "lucide-react"
@@ -60,10 +61,39 @@ export function CardItem({
   dragListeners?: DraggableSyntheticListeners
   isDragging?: boolean
 }) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const shouldOpenFromSearch = searchParams.get("card") === card.id
+
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTogglingFocus, setIsTogglingFocus] = useState(false)
-  const [detailOpen, setDetailOpen] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(shouldOpenFromSearch)
+  const [handledSearchOpen, setHandledSearchOpen] = useState(shouldOpenFromSearch)
+
+  // Deep-Link aus der Suche (?card=<id>): Dialog oeffnen, sobald der Param auf
+  // diese Card zeigt - auch wenn die Card bereits gemountet ist (Suchtreffer
+  // auf dem gerade angezeigten Board aendert nur den Query-Param, kein neuer
+  // Mount, ein reiner useState-Initializer wuerde das verpassen). Ueber den
+  // "adjust state during render"-Guard statt eines setState-Aufrufs im
+  // Effekt-Body (eslint react-hooks/set-state-in-effect).
+  if (shouldOpenFromSearch && !handledSearchOpen) {
+    setHandledSearchOpen(true)
+    setDetailOpen(true)
+  } else if (!shouldOpenFromSearch && handledSearchOpen) {
+    setHandledSearchOpen(false)
+  }
+
+  // Den Query-Param nach dem Oeffnen wieder entfernen, damit ein Reload/
+  // Zurueck-Navigieren ihn nicht erneut triggert - das ist ein echter
+  // Seiteneffekt (Router-Aufruf) und bleibt daher im Effekt.
+  useEffect(() => {
+    if (!shouldOpenFromSearch) return
+    const params = new URLSearchParams(searchParams)
+    params.delete("card")
+    router.replace(params.size > 0 ? `${pathname}?${params}` : pathname, { scroll: false })
+  }, [shouldOpenFromSearch, pathname, router, searchParams])
   const updateWithIds = updateCardTitle.bind(null, card.id, boardId)
   const [state, formAction, isPending] = useActionState(updateWithIds, initialState)
   const [prevState, setPrevState] = useState(state)
