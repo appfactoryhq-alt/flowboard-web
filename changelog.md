@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase B — Kern-Kanban
 
+### Spec 09 — Labels + Priority
+- `LabelPicker` (Zuweisen/Entfernen/Anlegen/Löschen, 9 Preset-Farben), `PrioritySelect`/`PriorityDot`, Label-Badges in Listen- und Modal-Ansicht
+- Schließt MVP 1 (Kern-Kanban, Specs 01-09) ab. Codex-Review: zwei Blocker behoben (ungültiger Non-Async-Export aus `"use server"`-Datei, `deleteLabel` war nicht in der UI erreichbar)
+
 ### Spec 08 — Card-Detail-Modal
 - `CardDetailDialog`: Titel, Beschreibung (debounced), Fälligkeitsdatum (Popover+Calendar), Zeitstempel; Motion-`layoutId`-Shared-Transition auf den Titel-Bereich beschränkt
 - Codex-Review (zwei Runden): Datenverlust-Blocker bei Server-Revalidierung während offenem Dialog behoben, Tastatur-Fokus-Handling für Modal-Öffnen nachgezogen, Reduced-Motion-Zoom neutralisiert

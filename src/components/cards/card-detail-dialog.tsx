@@ -12,6 +12,10 @@ import {
   updateCardTitle,
 } from "@/lib/cards/actions"
 import type { Card } from "@/components/cards/card-item"
+import { PrioritySelect } from "@/components/cards/priority-select"
+import { LabelBadge } from "@/components/labels/label-badge"
+import { LabelPicker } from "@/components/labels/label-picker"
+import type { Label } from "@/lib/labels/types"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -42,11 +46,13 @@ function dateToIso(date: Date): string {
 export function CardDetailDialog({
   card,
   boardId,
+  boardLabels,
   open,
   onOpenChange,
 }: {
   card: Card
   boardId: string
+  boardLabels: Label[]
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
@@ -143,6 +149,29 @@ export function CardDetailDialog({
         </motion.div>
 
         <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Priorität</span>
+              <PrioritySelect cardId={card.id} boardId={boardId} priority={card.priority} />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Labels</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <LabelPicker
+                  cardId={card.id}
+                  boardId={boardId}
+                  boardLabels={boardLabels}
+                  assignedLabelIds={card.labelIds}
+                />
+                {card.labelIds.flatMap((labelId) => {
+                  const label = boardLabels.find((candidate) => candidate.id === labelId)
+                  return label ? [<LabelBadge key={label.id} label={label} />] : []
+                })}
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">Beschreibung</span>
             <Textarea

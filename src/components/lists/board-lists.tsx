@@ -22,6 +22,7 @@ import { ListColumn } from "@/components/lists/list-column"
 import { NewListButton } from "@/components/lists/new-list-button"
 import { CardPreview } from "@/components/cards/card-preview"
 import type { Card } from "@/components/cards/card-item"
+import type { Label } from "@/lib/labels/types"
 
 type List = { id: string; name: string; position: number }
 
@@ -31,10 +32,12 @@ export function BoardLists({
   boardId,
   initialLists,
   cardsByList: initialCardsByList,
+  boardLabels,
 }: {
   boardId: string
   initialLists: List[]
   cardsByList: Record<string, Card[]>
+  boardLabels: Label[]
 }) {
   const [lists, setLists] = useState(initialLists)
   const [prevInitialLists, setPrevInitialLists] = useState(initialLists)
@@ -269,6 +272,7 @@ export function BoardLists({
               <ListColumn
                 list={list}
                 boardId={boardId}
+                boardLabels={boardLabels}
                 cards={cardsByList[list.id] ?? []}
                 onCardDeleted={(cardId) => handleCardDeleted(list.id, cardId)}
               />

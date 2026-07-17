@@ -10,6 +10,7 @@ import { deleteList, renameList, type ListActionState } from "@/lib/lists/action
 import { type Card } from "@/components/cards/card-item"
 import { SortableCard } from "@/components/cards/sortable-card"
 import { QuickAddCard } from "@/components/cards/quick-add-card"
+import type { Label } from "@/lib/labels/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -36,11 +37,13 @@ const initialState: ListActionState = { data: null, error: null }
 export function ListColumn({
   list,
   boardId,
+  boardLabels,
   cards,
   onCardDeleted,
 }: {
   list: List
   boardId: string
+  boardLabels: Label[]
   cards: Card[]
   onCardDeleted: (cardId: string) => void
 }) {
@@ -97,7 +100,13 @@ export function ListColumn({
           strategy={verticalListSortingStrategy}
         >
           {cards.map((card) => (
-            <SortableCard key={card.id} card={card} boardId={boardId} onDeleted={onCardDeleted} />
+            <SortableCard
+              key={card.id}
+              card={card}
+              boardId={boardId}
+              boardLabels={boardLabels}
+              onDeleted={onCardDeleted}
+            />
           ))}
         </SortableContext>
         <QuickAddCard listId={list.id} boardId={boardId} />

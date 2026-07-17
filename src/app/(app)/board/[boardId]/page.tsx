@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { BoardLists } from "@/components/lists/board-lists"
+import type { Label } from "@/lib/labels/types"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function BoardDetailPage({
@@ -36,7 +37,9 @@ export default async function BoardDetailPage({
 
   const { data: cards, error: cardsError } = await supabase
     .from("cards")
-    .select("id, list_id, title, description, due_date, position, created_at, updated_at")
+    .select(
+      "id, list_id, title, description, due_date, priority, position, created_at, updated_at",
+    )
     .eq("board_id", boardId)
     .order("position", { ascending: true })
 
@@ -44,10 +47,35 @@ export default async function BoardDetailPage({
     throw new Error(`Cards konnten nicht geladen werden: ${cardsError.message}`)
   }
 
-  type CardRow = NonNullable<typeof cards>[number]
+  const { data: boardLabels, error: labelsError } = await supabase
+    .from("labels")
+    .select("id, name, color")
+    .eq("board_id", boardId)
+    .order("name", { ascending: true })
+
+  if (labelsError) {
+    throw new Error(`Labels konnten nicht geladen werden: ${labelsError.message}`)
+  }
+
+  const { data: cardLabels, error: cardLabelsError } = await supabase
+    .from("card_labels")
+    .select("card_id, label_id, cards!inner(board_id)")
+    .eq("cards.board_id", boardId)
+
+  if (cardLabelsError) {
+    throw new Error(`Label-Zuordnungen konnten nicht geladen werden: ${cardLabelsError.message}`)
+  }
+
+  const labelIdsByCard: Record<string, string[]> = {}
+  for (const entry of cardLabels ?? []) {
+    ;(labelIdsByCard[entry.card_id] ??= []).push(entry.label_id)
+  }
+
+  type CardRow = NonNullable<typeof cards>[number] & { labelIds: string[] }
   const cardsByList: Record<string, CardRow[]> = {}
   for (const card of cards ?? []) {
-    ;(cardsByList[card.list_id] ??= []).push(card)
+    const withLabels: CardRow = { ...card, labelIds: labelIdsByCard[card.id] ?? [] }
+    ;(cardsByList[card.list_id] ??= []).push(withLabels)
   }
 
   return (
@@ -56,7 +84,12 @@ export default async function BoardDetailPage({
         <h1 className="text-xl font-semibold tracking-tight">{board.name}</h1>
       </div>
       <div className="min-h-0 flex-1">
-        <BoardLists boardId={board.id} initialLists={lists ?? []} cardsByList={cardsByList} />
+        <BoardLists
+          boardId={board.id}
+          initialLists={lists ?? []}
+          cardsByList={cardsByList}
+          boardLabels={(boardLabels ?? []) as Label[]}
+        />
       </div>
     </div>
   )

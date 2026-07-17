@@ -6,11 +6,14 @@ import { motion } from "motion/react"
 import { CalendarDays, X } from "lucide-react"
 import { toast } from "sonner"
 
-import { deleteCard, updateCardTitle, type CardActionState } from "@/lib/cards/actions"
+import { deleteCard, updateCardTitle, type CardActionState, type CardPriority } from "@/lib/cards/actions"
 import { CardDetailDialog } from "@/components/cards/card-detail-dialog"
+import { LabelBadge } from "@/components/labels/label-badge"
+import { PriorityDot } from "@/components/cards/priority-select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import type { Label } from "@/lib/labels/types"
 
 export type Card = {
   id: string
@@ -18,6 +21,8 @@ export type Card = {
   title: string
   description: string | null
   due_date: string | null
+  priority: CardPriority
+  labelIds: string[]
   position: number
   created_at: string
   updated_at: string
@@ -28,6 +33,7 @@ const initialState: CardActionState = { data: null, error: null }
 export function CardItem({
   card,
   boardId,
+  boardLabels,
   onDeleted,
   dragRef,
   dragStyle,
@@ -37,6 +43,7 @@ export function CardItem({
 }: {
   card: Card
   boardId: string
+  boardLabels: Label[]
   onDeleted: (cardId: string) => void
   dragRef?: (node: HTMLElement | null) => void
   dragStyle?: CSSProperties
@@ -167,10 +174,31 @@ export function CardItem({
           )}
         </motion.div>
 
-        {card.due_date ? (
-          <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-            <CalendarDays className="size-3" />
-            {new Date(card.due_date).toLocaleDateString("de-DE", { timeZone: "UTC" })}
+        {card.labelIds.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {card.labelIds.flatMap((labelId) => {
+              const label = boardLabels.find((candidate) => candidate.id === labelId)
+              return label ? [<LabelBadge key={label.id} label={label} />] : []
+            })}
+          </div>
+        ) : null}
+
+        {card.due_date || card.priority !== "med" ? (
+          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+            {card.due_date ? (
+              <span className="flex items-center gap-1">
+                <CalendarDays className="size-3" />
+                {new Date(card.due_date).toLocaleDateString("de-DE", { timeZone: "UTC" })}
+              </span>
+            ) : null}
+            {card.priority !== "med" ? (
+              <span className="flex items-center gap-1">
+                <PriorityDot priority={card.priority} />
+                <span className="sr-only">
+                  Priorität {card.priority === "high" ? "hoch" : "niedrig"}
+                </span>
+              </span>
+            ) : null}
           </div>
         ) : null}
 
@@ -194,6 +222,7 @@ export function CardItem({
       <CardDetailDialog
         card={card}
         boardId={boardId}
+        boardLabels={boardLabels}
         open={detailOpen}
         onOpenChange={handleDetailOpenChange}
       />

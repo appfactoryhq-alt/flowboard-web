@@ -9,6 +9,8 @@ export type CardActionState = {
   error: string | null
 }
 
+export type CardPriority = "low" | "med" | "high"
+
 const POSITION_STEP = 1000
 
 function readCardTitle(formData: FormData): string | null {
@@ -128,6 +130,31 @@ export async function updateCardDueDate(
   const { data, error } = await supabase
     .from("cards")
     .update({ due_date: dueDate })
+    .eq("id", cardId)
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
+  }
+
+  revalidatePath(`/board/${boardId}`)
+  return { data: { id: cardId }, error: null }
+}
+
+export async function updateCardPriority(
+  cardId: string,
+  boardId: string,
+  priority: CardPriority,
+): Promise<CardActionState> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from("cards")
+    .update({ priority })
     .eq("id", cardId)
     .select("id")
     .maybeSingle()
