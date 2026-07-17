@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidateCardViews } from "@/lib/revalidate"
+import { generatedCardSchema } from "@/lib/ai/card-schema"
 
 export type CardActionState = {
   data: { id: string } | null
@@ -54,6 +55,61 @@ export async function createCard(
   const { data, error } = await supabase
     .from("cards")
     .insert({ list_id: listId, board_id: boardId, title, position })
+    .select("id")
+    .maybeSingle()
+
+  if (error || !data) {
+    return { data: null, error: error?.message ?? "Card konnte nicht angelegt werden." }
+  }
+
+  revalidatePath(`/board/${boardId}`)
+  return { data: { id: data.id }, error: null }
+}
+
+export async function createCardFromSuggestion(
+  listId: string,
+  boardId: string,
+  suggestion: unknown,
+): Promise<CardActionState> {
+  // Server Actions sind direkt aufrufbare Grenzen, TypeScript-Typen schuetzen
+  // nicht zur Laufzeit - der Aufrufer stammt zwar aus einer AI-Antwort, die
+  // bereits clientseitig gegen dasselbe Schema validiert wurde, aber die
+  // Server Action selbst darf sich darauf nicht verlassen (Defense in Depth,
+  // Codex-Review-Fund).
+  const parsed = generatedCardSchema.safeParse(suggestion)
+  if (!parsed.success) {
+    return { data: null, error: "Ungültiger Card-Vorschlag." }
+  }
+
+  const title = parsed.data.title.trim()
+
+  if (title.length < 1 || title.length > 200) {
+    return { data: null, error: "Titel muss zwischen 1 und 200 Zeichen lang sein." }
+  }
+
+  const supabase = await createClient()
+
+  const { data: lastCard } = await supabase
+    .from("cards")
+    .select("position")
+    .eq("list_id", listId)
+    .order("position", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const position = (lastCard?.position ?? 0) + POSITION_STEP
+  const description = parsed.data.description?.trim()
+
+  const { data, error } = await supabase
+    .from("cards")
+    .insert({
+      list_id: listId,
+      board_id: boardId,
+      title,
+      description: description && description.length > 0 ? description : null,
+      priority: parsed.data.priority ?? "med",
+      position,
+    })
     .select("id")
     .maybeSingle()
 

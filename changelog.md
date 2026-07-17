@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase C — Smart-Features, Realtime, AI, Landingpage
 
+### Spec 14 — Smart-Card-Generation
+- Route Handler `/api/cards/generate` (Requesty, `openai/gpt-4.1-mini`, `streamText`+`Output.array`), `AiGenerateDialog` mit gestaffelter Animation, Übernehmen/Alle übernehmen
+- Provider-Fund: `OPENAI_KEY` ist tatsächlich ein Requesty-Key. Codex-Review (zwei Runden): zwei Blocker behoben (falscher Request-Body, Stream-Format-Mismatch `{elements:[...]}` vs. Root-Array), beide durch eigene Testskripte gegen den echten Provider empirisch verifiziert
+
 ### Spec 13 — Realtime-Sync
 - `cards` zur Realtime-Publication hinzugefügt (war leer), `useRealtimeCards` (INSERT/UPDATE via postgres_changes, RLS-gefiltert), idempotentes Upsert per Card-ID
 - DELETE via leichtgewichtiges Broadcast-Tombstone-Signal (Codex-Review-Blocker-Fix: ursprünglich rein lokal-optimistisch, widersprach der eigenen Akzeptanzkriterien)

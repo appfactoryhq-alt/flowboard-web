@@ -10,6 +10,7 @@ import { deleteList, renameList, type ListActionState } from "@/lib/lists/action
 import { type Card } from "@/components/cards/card-item"
 import { SortableCard } from "@/components/cards/sortable-card"
 import { QuickAddCard } from "@/components/cards/quick-add-card"
+import { AiGenerateDialog } from "@/components/cards/ai-generate-dialog"
 import type { Label } from "@/lib/labels/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -110,6 +111,7 @@ export function ListColumn({
           ))}
         </SortableContext>
         <QuickAddCard listId={list.id} boardId={boardId} />
+        <AiGenerateDialog listId={list.id} boardId={boardId} />
       </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
