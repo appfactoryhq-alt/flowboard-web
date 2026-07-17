@@ -84,6 +84,7 @@ export async function deleteLabel(labelId: string, boardId: string): Promise<Lab
   }
 
   revalidatePath(`/board/${boardId}`)
+  revalidatePath("/today")
   return { data: { id: labelId }, error: null }
 }
 
@@ -103,6 +104,7 @@ export async function assignLabel(
   }
 
   revalidatePath(`/board/${boardId}`)
+  revalidatePath("/today")
   return { data: { id: labelId }, error: null }
 }
 
@@ -123,5 +125,6 @@ export async function unassignLabel(
   }
 
   revalidatePath(`/board/${boardId}`)
+  revalidatePath("/today")
   return { data: { id: labelId }, error: null }
 }

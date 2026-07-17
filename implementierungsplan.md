@@ -15,7 +15,7 @@ Solo-User-Kanban-App (Web plus Native, siehe `Architektur-EntscheidungFlowBoard.
 | 07 | Cards-DnD (Cross-List) | fertig |
 | 08 | Card-Detail-Modal | fertig |
 | 09 | Labels + Priority | fertig |
-| 10 | Smart-View Heute | offen |
+| 10 | Smart-View Heute | fertig |
 | 11 | Focus-Mode | offen |
 | 12 | Full-Text Search | offen |
 | 13 | Realtime-Sync | offen |

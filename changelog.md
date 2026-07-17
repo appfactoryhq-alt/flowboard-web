@@ -2,6 +2,13 @@
 
 Abgeschlossene Specs, neueste zuerst.
 
+## Phase C — Smart-Features, Realtime, AI, Landingpage
+
+### Spec 10 — Smart-View Heute
+- SQL-View `today_cards` (`security_invoker = true`, Timezone-Filter über `profiles.timezone`), `/today`-Seite gruppiert board-übergreifend fällige Cards
+- Sidebar-Link aktiviert, globale Cross-Fade-Transition (`PageTransition`) für alle App-Seitenwechsel
+- Codex-Review: `revalidateCardViews`-Helper eingeführt, damit Card-/Label-Mutationen auch `/today` aktuell halten (nicht nur das jeweilige Board)
+
 ## Phase B — Kern-Kanban
 
 ### Spec 09 — Labels + Priority

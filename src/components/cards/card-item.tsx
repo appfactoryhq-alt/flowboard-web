@@ -17,6 +17,7 @@ import type { Label } from "@/lib/labels/types"
 
 export type Card = {
   id: string
+  board_id: string
   list_id: string
   title: string
   description: string | null
@@ -122,7 +123,11 @@ export function CardItem({
           }
         }}
         className={cn(
-          "group/card relative cursor-pointer touch-none rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/70 p-2.5 shadow-sm ring-1 ring-foreground/5 transition-all duration-150 ease-out hover:shadow-md hover:ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+          "group/card relative cursor-pointer rounded-xl border border-border/50 bg-gradient-to-br from-card to-card/70 p-2.5 shadow-sm ring-1 ring-foreground/5 transition-all duration-150 ease-out hover:shadow-md hover:ring-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+          // touch-none nur innerhalb eines dnd-kit-Kontexts (Board-Ansicht) -
+          // in reinen Lese-Listen wie /today wuerde es vertikales Touch-Scrollen
+          // blockieren, ohne dass hier tatsaechlich gedraggt werden kann.
+          dragListeners && "touch-none",
           isDragging && "opacity-40",
           isDeleting && "pointer-events-none opacity-50",
         )}

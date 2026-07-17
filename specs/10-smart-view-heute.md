@@ -48,4 +48,17 @@ Aggregierte Ansicht über alle Boards hinweg: Cards mit `due_date = heute` (in U
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- SQL-View `today_cards` via Supabase MCP angewendet (`flow_board_today_cards_view`): `security_invoker = true`, Filter `c.due_date = (now() at time zone p.timezone)::date`.
+- `/today`-Seite lädt die View plus Boards/Labels/Card-Labels für die betroffenen Boards, gruppiert nach Board mit Link zurück zum jeweiligen Board.
+- `CardItem` wird hier ohne `SortableCard`/dnd-kit-Wrapper verwendet (alle Drag-Props sind optional) — funktioniert sauber, da kein Drag in dieser Ansicht nötig ist.
+- `Card`-Typ um `board_id` erweitert (für die board-übergreifende Gruppierung), Board-Detail-Query entsprechend nachgezogen.
+- Sidebar-Link „Heute" aktiviert. Cross-Fade-Transition (`PageTransition`, `AnimatePresence` + Motion) bewusst global für alle `(app)`-Seitenwechsel eingehängt, nicht nur für Smart-Views — konsistenter für den Rest der App, erfüllt die Spec-Anforderung mit.
+- **Codex-Review (gpt-5.6-sol, high): kein Blocker, kein Datenleck bestätigt** (RLS via `security_invoker` greift durch die View, Folgequeries sind selbst wieder RLS-geschützt). Zwei Warnings, ein Nit behoben:
+  - **Warning behoben: `/today` blieb nach Bearbeitungen veraltet.** Card-Mutationen (Titel/Beschreibung/Fälligkeitsdatum/Priorität/Move/Delete) sowie Label-Zuweisung/-Entfernung/-Löschung haben bisher nur `/board/${boardId}` revalidiert, nicht `/today` — obwohl Cards auch von dort aus bearbeitet werden können und ein entferntes Fälligkeitsdatum die Card eigentlich aus der Heute-Ansicht verschwinden lassen sollte. Fix: neuer Helper `revalidateCardViews(boardId)` revalidiert zusätzlich `/today`, in allen relevanten Card- und Label-Actions verwendet. (`createLabel`/`createCard` bewusst ausgenommen — ein neues Label/eine neue Card ohne Fälligkeitsdatum kann die Heute-Ansicht nicht beeinflussen.) Spec 11 (Focus) wird beim Bau denselben Helper um `/focus` erweitern müssen.
+  - **Warning behoben: `touch-none` auf `CardItem` blockierte mobiles Scrollen außerhalb eines Drag-Kontexts.** Die Klasse war unbedingt gesetzt, obwohl sie nur nötig ist, wenn die Card tatsächlich innerhalb eines dnd-kit-`DndContext` (Board-Ansicht) hängt. Fix: `touch-none` nur noch, wenn `dragListeners` übergeben wurde.
+  - **Nit behoben: Cross-Fade-Dauer ignorierte `prefers-reduced-motion`.** `PageTransition` nutzt jetzt `useReducedMotion()` aus `motion/react` und setzt die Transition-Dauer bei aktivierter Systemeinstellung auf 0.
+- **Offene Nachverifikation (kein Browser-Zugriff in dieser Session):** Timezone-Verhalten mit realen Profildaten (UTC, positive/negative Zonen, DST-Grenzfälle), Cross-User-Isolation mit zweiter Session, mobiles Scrollen auf `/today`.

@@ -38,7 +38,7 @@ export default async function BoardDetailPage({
   const { data: cards, error: cardsError } = await supabase
     .from("cards")
     .select(
-      "id, list_id, title, description, due_date, priority, position, created_at, updated_at",
+      "id, board_id, list_id, title, description, due_date, priority, position, created_at, updated_at",
     )
     .eq("board_id", boardId)
     .order("position", { ascending: true })

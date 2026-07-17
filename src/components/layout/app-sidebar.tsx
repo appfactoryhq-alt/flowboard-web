@@ -17,8 +17,7 @@ const NAV_ITEMS = [
     href: "/today",
     label: "Heute",
     icon: Sparkles,
-    disabled: true,
-    disabledHint: "Kommt in Spec 10",
+    disabled: false,
   },
   {
     href: "/focus",

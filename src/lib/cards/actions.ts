@@ -13,6 +13,15 @@ export type CardPriority = "low" | "med" | "high"
 
 const POSITION_STEP = 1000
 
+// Card-Aenderungen koennen sich auf mehrere Ansichten auswirken (Board-Detail
+// plus board-uebergreifende Smart-Views wie "Heute"), die alle direkt aus
+// derselben cards-Tabelle lesen und daher jeweils eigenstaendig revalidiert
+// werden muessen - revalidatePath deckt nur den uebergebenen Pfad ab.
+function revalidateCardViews(boardId: string) {
+  revalidatePath(`/board/${boardId}`)
+  revalidatePath("/today")
+}
+
 function readCardTitle(formData: FormData): string | null {
   const title = formData.get("title")
 
@@ -90,7 +99,7 @@ export async function updateCardTitle(
     return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }
 
@@ -117,7 +126,7 @@ export async function updateCardDescription(
     return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }
 
@@ -142,7 +151,7 @@ export async function updateCardDueDate(
     return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }
 
@@ -167,7 +176,7 @@ export async function updateCardPriority(
     return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }
 
@@ -189,7 +198,7 @@ export async function moveCard(
     return { data: null, error: error.message }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }
 
@@ -210,6 +219,6 @@ export async function deleteCard(cardId: string, boardId: string): Promise<CardA
     return { data: null, error: "Card nicht gefunden oder kein Zugriff." }
   }
 
-  revalidatePath(`/board/${boardId}`)
+  revalidateCardViews(boardId)
   return { data: { id: cardId }, error: null }
 }

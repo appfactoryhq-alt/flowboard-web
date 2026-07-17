@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/layout/app-header"
 import { AppSidebar } from "@/components/layout/app-sidebar"
+import { PageTransition } from "@/components/layout/page-transition"
 import { createClient } from "@/lib/supabase/server"
 
 export default async function AppLayout({
@@ -16,7 +17,9 @@ export default async function AppLayout({
       <AppHeader email={email} />
       <div className="flex flex-1">
         <AppSidebar />
-        <main className="min-w-0 flex-1">{children}</main>
+        <main className="min-w-0 flex-1">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
     </div>
   )
