@@ -5,6 +5,8 @@ import { MoreHorizontal, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { deleteList, renameList, type ListActionState } from "@/lib/lists/actions"
+import { CardItem, type Card } from "@/components/cards/card-item"
+import { QuickAddCard } from "@/components/cards/quick-add-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -28,9 +30,24 @@ type List = { id: string; name: string; position: number }
 
 const initialState: ListActionState = { data: null, error: null }
 
-export function ListColumn({ list, boardId }: { list: List; boardId: string }) {
+export function ListColumn({
+  list,
+  boardId,
+  initialCards,
+}: {
+  list: List
+  boardId: string
+  initialCards: Card[]
+}) {
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [cards, setCards] = useState(initialCards)
+  const [prevInitialCards, setPrevInitialCards] = useState(initialCards)
+
+  if (initialCards !== prevInitialCards) {
+    setPrevInitialCards(initialCards)
+    setCards(initialCards)
+  }
 
   async function handleDelete() {
     setIsDeleting(true)
@@ -72,8 +89,18 @@ export function ListColumn({ list, boardId }: { list: List; boardId: string }) {
         </DropdownMenu>
       </div>
 
-      <div className="flex min-h-16 flex-col gap-2 text-sm text-muted-foreground">
-        <p className="px-1 text-xs">Cards folgen in Spec 06.</p>
+      <div className="flex min-h-16 flex-col gap-2">
+        {cards.map((card) => (
+          <CardItem
+            key={card.id}
+            card={card}
+            boardId={boardId}
+            onDeleted={(cardId) =>
+              setCards((current) => current.filter((c) => c.id !== cardId))
+            }
+          />
+        ))}
+        <QuickAddCard listId={list.id} boardId={boardId} />
       </div>
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>

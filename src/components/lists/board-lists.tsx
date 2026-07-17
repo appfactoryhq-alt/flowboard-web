@@ -7,6 +7,7 @@ import { toast } from "sonner"
 import { reorderList } from "@/lib/lists/actions"
 import { ListColumn } from "@/components/lists/list-column"
 import { NewListButton } from "@/components/lists/new-list-button"
+import type { Card } from "@/components/cards/card-item"
 
 type List = { id: string; name: string; position: number }
 
@@ -15,9 +16,11 @@ const POSITION_STEP = 1000
 export function BoardLists({
   boardId,
   initialLists,
+  cardsByList,
 }: {
   boardId: string
   initialLists: List[]
+  cardsByList: Record<string, Card[]>
 }) {
   const [lists, setLists] = useState(initialLists)
   const [prevInitialLists, setPrevInitialLists] = useState(initialLists)
@@ -89,7 +92,11 @@ export function BoardLists({
             value={list}
             onDragEnd={() => handleDragEnd(list.id)}
           >
-            <ListColumn list={list} boardId={boardId} />
+            <ListColumn
+              list={list}
+              boardId={boardId}
+              initialCards={cardsByList[list.id] ?? []}
+            />
           </Reorder.Item>
         ))}
       </Reorder.Group>

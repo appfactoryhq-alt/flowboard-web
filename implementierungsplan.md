@@ -11,7 +11,7 @@ Solo-User-Kanban-App (Web plus Native, siehe `Architektur-EntscheidungFlowBoard.
 | 03 | Base-Layout | fertig |
 | 04 | Boards-CRUD | fertig |
 | 05 | Lists-CRUD | fertig |
-| 06 | Cards-CRUD (Quick-Add) | offen |
+| 06 | Cards-CRUD (Quick-Add) | fertig |
 | 07 | Cards-DnD (Cross-List) | offen |
 | 08 | Card-Detail-Modal | offen |
 | 09 | Labels + Priority | offen |

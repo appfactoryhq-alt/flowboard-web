@@ -48,4 +48,12 @@ Cards innerhalb einer Liste anlegen (inline Quick-Add am Listenende), anzeigen, 
 
 ## Status
 
-offen
+fertig
+
+## Debrief
+
+- `src/lib/cards/actions.ts`: `createCard`/`updateCardTitle`/`deleteCard`, gleiches Fractional-Position- und `{data,error}`-Muster wie Lists (Spec 05).
+- `CardItem` (Titel inline editierbar, Due-Date-Badge, Hover-Delete ohne Blocking-Dialog plus Sonner-Bestätigung), `QuickAddCard` (Enter speichert sofort, Feld bleibt fokussiert/leer für die nächste Eingabe).
+- `ListColumn` hält jetzt lokalen `cards`-State (gleiches „Adjust state during render"-Muster wie bei Lists), `board/[boardId]/page.tsx` lädt Cards nach `board_id` und gruppiert sie clientseitig nach `list_id`.
+- Codex-Review (gpt-5.6-sol, high): kein Blocker. Eine Warning behoben — `due_date` (Postgres `date`, „YYYY-MM-DD") wurde von `new Date()` als UTC-Mitternacht interpretiert, `toLocaleDateString` formatierte aber in Browser-Zeitzone, wodurch das Datum in negativen UTC-Zonen einen Tag zu früh erscheinen konnte. Fix: `toLocaleDateString("de-DE", { timeZone: "UTC" })`. `createCard`-Race-Condition bestätigt als dasselbe, bereits in `backlog.md` dokumentierte Muster wie `createList` — nichts Neues zu tun.
+- Offene Nachverifikation (kein Browser-Zugriff in dieser Session): Fokus-Verhalten bei mehreren aufeinanderfolgenden Quick-Adds per Enter, Escape/Blur-Sequenz beim Titel-Edit.

@@ -4,6 +4,10 @@ Abgeschlossene Specs, neueste zuerst.
 
 ## Phase B — Kern-Kanban
 
+### Spec 06 — Cards-CRUD (Quick-Add)
+- `src/lib/cards/actions.ts` (createCard/updateCardTitle/deleteCard), inline Quick-Add (Enter speichert sofort, Feld bleibt offen), inline Titel-Edit, Hover-Delete mit Sonner-Bestätigung
+- Due-Date-Badge auf der Card (UTC-Parsing-Fix aus Codex-Review)
+
 ### Spec 05 — Lists-CRUD
 - `src/lib/lists/actions.ts` (createList/renameList/deleteList/reorderList), horizontales Same-Row-Reorder via `motion/react` `Reorder`
 - Fractional-Ranking-Kollisionsschutz (Rebalancing auf 1000er-Abstände bei float8-Präzisionsgrenze), Reorder-Fehlerbehandlung mit Rollback
