@@ -13,6 +13,7 @@ import {
 } from "@/lib/cards/actions"
 import type { Card } from "@/components/cards/card-item"
 import { PrioritySelect } from "@/components/cards/priority-select"
+import { CategorySuggestionPanel } from "@/components/cards/category-suggestion"
 import { LabelBadge } from "@/components/labels/label-badge"
 import { LabelPicker } from "@/components/labels/label-picker"
 import type { Label } from "@/lib/labels/types"
@@ -171,6 +172,12 @@ export function CardDetailDialog({
               </div>
             </div>
           </div>
+
+          <CategorySuggestionPanel
+            cardId={card.id}
+            boardId={boardId}
+            cardUpdatedAt={card.updated_at}
+          />
 
           <div className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">Beschreibung</span>
